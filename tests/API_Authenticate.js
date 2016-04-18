@@ -32,7 +32,8 @@ const expectedAuthenticate = {
 module.exports = function(pass, fail) {
 	const qb = new QuickBase({
 		realm: process.env.realm,
-		appToken: process.env.appToken
+		appToken: process.env.appToken,
+		proxy: 'https://proxy.datacollaborative.com/'
 	});
 
 	return qb.api('API_Authenticate', {

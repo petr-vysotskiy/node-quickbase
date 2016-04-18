@@ -20,6 +20,7 @@ const xml = require('xml2js');
 const http = require('http');
 const https = require('https');
 const merge = require('lodash.merge');
+const Agent = require('https-proxy-agent');
 const Promise = require('bluebird');
 
 /* Backwards Compatibility */
@@ -481,7 +482,7 @@ class QueryBuilder {
 					'Content-Type': 'application/xml; charset=' + this.options.encoding,
 					'QUICKBASE-ACTION': this.action
 				},
-				agent: false
+				agent: settings.proxy ? new Agent(settings.proxy) : false
 			};
 			const request = protocol.request(options, (response) => {
 				let xmlResponse = '';
