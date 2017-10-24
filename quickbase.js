@@ -17,7 +17,6 @@
 
 /* Dependencies */
 const xml = require('xml2js');
-const http = require('http');
 const https = require('https');
 const merge = require('lodash.merge');
 const debugRequest = require('debug')('quickbase:request');
@@ -44,7 +43,6 @@ const defaults = {
 	realm: 'www',
 	domain: 'quickbase.com',
 	path: '/',
-	useSSL: true,
 
 	username: '',
 	password: '',
@@ -509,10 +507,9 @@ class QueryBuilder {
 	processQuery() {
 		return new Promise((resolve, reject) => {
 			const settings = this.settings;
-			const protocol = settings.useSSL ? https : http;
 			const options = {
 				hostname: [ settings.realm, settings.domain ].join('.'),
-				port: settings.useSSL ? 443 : 80,
+				port: 443,
 				path: settings.path + 'db/' + (this.options.dbid && !settings.flags.dbidAsParam ? this.options.dbid : 'main') + '?act=' + this.action + (!settings.flags.useXML ? this.payload : ''),
 				method: settings.flags.useXML ? 'POST' : 'GET',
 				headers: {
@@ -521,7 +518,7 @@ class QueryBuilder {
 				},
 				agent: false
 			};
-			const request = protocol.request(options, (response) => {
+			const request = https.request(options, (response) => {
 				let xmlResponse = '';
 
 				response.on('data', (chunk) => {
@@ -692,10 +689,6 @@ const actions = {
 		// response(query, results) { }
 	// },
 	API_Authenticate: {
-		request(query) {
-			// API_Authenticate can only happen over SSL
-			query.settings.useSSL = true;
-		},
 		response(query, results) {
 			query.parent.settings.ticket = results.ticket;
 			query.parent.settings.username = query.options.username;
