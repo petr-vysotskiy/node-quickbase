@@ -18,7 +18,6 @@
 /* Dependencies */
 const xml = require('xml2js');
 const https = require('https');
-const merge = require('lodash.merge');
 const debugRequest = require('debug')('quickbase:request');
 const debugResponse = require('debug')('quickbase:response');
 const Promise = require('bluebird');
@@ -171,7 +170,7 @@ class QuickBase {
 
 		this.className = QuickBase.className;
 
-		this.settings = merge({}, QuickBase.defaults, options || {});
+		this.settings = Object.assign({}, QuickBase.defaults, options || {});
 
 		this.throttle = new Throttle(this.settings.connectionLimit, -1, this.settings.errorOnConnectionLimit);
 
@@ -336,7 +335,7 @@ class QueryBuilder {
 		this.options = options;
 		this.callback = callback;
 
-		this.settings = merge({}, parent.settings);
+		this.settings = Object.assign({}, parent.settings);
 
 		this.results;
 
