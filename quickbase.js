@@ -20,7 +20,6 @@ const xml = require('xml2js');
 const https = require('https');
 const debugRequest = require('debug')('quickbase:request');
 const debugResponse = require('debug')('quickbase:response');
-const Promise = require('bluebird');
 /* Error Handling */
 class QuickBaseError extends Error {
 
@@ -109,9 +108,7 @@ class Throttle {
 				resolve: resolve,
 				reject: reject
 			});
-		}).disposer(() => {
-			this._testTick();
-		});
+		})
 	}
 
 	_testTick() {
@@ -151,13 +148,20 @@ class Throttle {
 	}
 
 	acquire(fn) {
-		return Promise.using(this._acquire(), () => {
-			if (fn) {
-				return new Promise(fn);
-			}
-
-			return Promise.resolve();
-		});
+		return this._acquire().then(() => {
+			return new Promise((resolve, reject) => {
+				fn(resolve, reject)
+					.then(
+					result => {
+						this._testTick();
+						return result;
+					},
+					error => {
+						this._testTick();
+						throw error;
+					});
+			});
+		})
 	}
 
 }
@@ -1556,9 +1560,5 @@ if (typeof global !== 'undefined' && typeof window !== 'undefined' && global ===
 		if (window.localStorage) {
 			window.localStorage.debug = 'quickbase:*';
 		}
-	} else {
-		QuickBase.Promise.config({
-			longStackTraces: false
-		});
 	}
 }
